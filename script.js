@@ -1,18 +1,24 @@
 // ==========================================
-// Smooth Scroll & Navigation Highlight
+// Initialize Lucide Icons
 // ==========================================
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Lucide icons
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
 
-    // Smooth scrolling for navigation links
-    const navLinks = document.querySelectorAll('.nav-menu a, .hero-buttons a[href^="#"]');
+    // ==========================================
+    // Smooth Scroll
+    // ==========================================
 
-    navLinks.forEach(link => {
+    const scrollLinks = document.querySelectorAll('a[href^="#"]');
+
+    scrollLinks.forEach(link => {
         link.addEventListener('click', function(e) {
             const href = this.getAttribute('href');
 
-            // Only handle internal links
-            if (href.startsWith('#')) {
+            if (href !== '#' && href.length > 1) {
                 e.preventDefault();
                 const targetId = href.substring(1);
                 const targetSection = document.getElementById(targetId);
@@ -31,102 +37,51 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // ==========================================
-    // Active Navigation Highlight
-    // ==========================================
-
-    const sections = document.querySelectorAll('section[id]');
-    const navMenuLinks = document.querySelectorAll('.nav-menu a');
-
-    function highlightNavigation() {
-        const scrollPosition = window.scrollY + 150;
-
-        sections.forEach(section => {
-            const sectionTop = section.offsetTop;
-            const sectionHeight = section.offsetHeight;
-            const sectionId = section.getAttribute('id');
-
-            if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight) {
-                navMenuLinks.forEach(link => {
-                    link.classList.remove('active');
-                    if (link.getAttribute('href') === `#${sectionId}`) {
-                        link.classList.add('active');
-                    }
-                });
-            }
-        });
-    }
-
-    window.addEventListener('scroll', highlightNavigation);
-    highlightNavigation(); // Call on load
-
-    // ==========================================
-    // Fade-in Animation on Scroll
-    // ==========================================
-
-    const observerOptions = {
-        threshold: 0.1,
-        rootMargin: '0px 0px -50px 0px'
-    };
-
-    const observer = new IntersectionObserver(function(entries) {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('fade-in-up');
-                observer.unobserve(entry.target);
-            }
-        });
-    }, observerOptions);
-
-    // Observe elements for fade-in animation
-    const fadeElements = document.querySelectorAll(
-        '.research-card, .skill-category, .pub-item, .about-text, .contact-content'
-    );
-
-    fadeElements.forEach(element => {
-        observer.observe(element);
-    });
-
-    // ==========================================
-    // Research Card Interaction
-    // ==========================================
-
-    const researchCards = document.querySelectorAll('.research-card');
-
-    researchCards.forEach(card => {
-        card.addEventListener('mouseenter', function() {
-            this.style.borderColor = 'var(--primary-color)';
-        });
-
-        card.addEventListener('mouseleave', function() {
-            this.style.borderColor = 'var(--border-color)';
-        });
-    });
-
-    // ==========================================
-    // Navbar Background on Scroll
+    // Navigation Shadow on Scroll
     // ==========================================
 
     const nav = document.querySelector('.nav');
-    let lastScroll = 0;
 
-    window.addEventListener('scroll', function() {
-        const currentScroll = window.pageYOffset;
-
-        if (currentScroll > 100) {
-            nav.style.boxShadow = 'var(--shadow-md)';
+    function updateNavShadow() {
+        if (window.scrollY > 20) {
+            nav.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.1)';
         } else {
-            nav.style.boxShadow = 'var(--shadow-sm)';
+            nav.style.boxShadow = 'none';
         }
+    }
 
-        lastScroll = currentScroll;
-    });
+    window.addEventListener('scroll', updateNavShadow);
+    updateNavShadow();
 
     // ==========================================
-    // Responsive Navigation (Mobile)
+    // Scroll Indicator (Homepage Only)
     // ==========================================
 
-    // This could be extended with a hamburger menu for mobile
-    // Currently using a simple responsive design that stacks items
+    const scrollIndicator = document.querySelector('.scroll-indicator');
+
+    if (scrollIndicator) {
+        scrollIndicator.addEventListener('click', function() {
+            const aboutSection = document.querySelector('.about');
+            if (aboutSection) {
+                const navHeight = document.querySelector('.nav').offsetHeight;
+                const targetPosition = aboutSection.offsetTop - navHeight;
+
+                window.scrollTo({
+                    top: targetPosition,
+                    behavior: 'smooth'
+                });
+            }
+        });
+
+        // Hide scroll indicator after scrolling
+        window.addEventListener('scroll', function() {
+            if (window.scrollY > 100 && scrollIndicator) {
+                scrollIndicator.style.opacity = '0';
+            } else if (scrollIndicator) {
+                scrollIndicator.style.opacity = '1';
+            }
+        });
+    }
 
     // ==========================================
     // External Links - Open in New Tab
@@ -141,95 +96,33 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // ==========================================
-    // Typing Effect for Hero (Optional Enhancement)
+    // Fade-in Animation on Scroll
     // ==========================================
 
-    const heroDescription = document.querySelector('.hero-description');
-    if (heroDescription) {
-        const originalText = heroDescription.textContent;
-        heroDescription.style.opacity = '0';
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
 
-        setTimeout(() => {
-            heroDescription.style.opacity = '1';
-            heroDescription.style.transition = 'opacity 0.8s ease-in';
-        }, 300);
-    }
-
-    // ==========================================
-    // Email Obfuscation (Simple Anti-Spam)
-    // ==========================================
-
-    // This provides minimal protection against basic email scrapers
-    // The email is already visible in HTML, but this could be enhanced
-
-    // ==========================================
-    // Performance: Lazy Loading for Future Images
-    // ==========================================
-
-    if ('loading' in HTMLImageElement.prototype) {
-        const images = document.querySelectorAll('img[loading="lazy"]');
-        images.forEach(img => {
-            img.src = img.dataset.src;
+    const observer = new IntersectionObserver(function(entries) {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+                observer.unobserve(entry.target);
+            }
         });
-    }
+    }, observerOptions);
 
-    // ==========================================
-    // Accessibility: Focus Management
-    // ==========================================
-
-    // Ensure keyboard navigation works smoothly
-    const focusableElements = document.querySelectorAll(
-        'a, button, input, textarea, select, details, [tabindex]:not([tabindex="-1"])'
+    // Observe elements for fade-in
+    const fadeElements = document.querySelectorAll(
+        '.nav-card, .research-item, .experience-item, .interest-item, .skill-group'
     );
 
-    focusableElements.forEach(element => {
-        element.addEventListener('focus', function() {
-            this.style.outline = '2px solid var(--primary-color)';
-            this.style.outlineOffset = '2px';
-        });
-
-        element.addEventListener('blur', function() {
-            this.style.outline = '';
-            this.style.outlineOffset = '';
-        });
+    fadeElements.forEach(element => {
+        element.style.opacity = '0';
+        element.style.transform = 'translateY(20px)';
+        element.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        observer.observe(element);
     });
-
-    // ==========================================
-    // Console Message
-    // ==========================================
-
-    console.log('%cVincent Peiling Li - Psycholinguistic Researcher', 'color: #2563eb; font-size: 16px; font-weight: bold;');
-    console.log('%cInterested in collaboration? Email: s2189034@ed.ac.uk', 'color: #64748b; font-size: 12px;');
-
 });
-
-// ==========================================
-// Utility Functions
-// ==========================================
-
-// Debounce function for performance optimization
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
-}
-
-// Throttle function for scroll events
-function throttle(func, limit) {
-    let inThrottle;
-    return function() {
-        const args = arguments;
-        const context = this;
-        if (!inThrottle) {
-            func.apply(context, args);
-            inThrottle = true;
-            setTimeout(() => inThrottle = false, limit);
-        }
-    };
-}
